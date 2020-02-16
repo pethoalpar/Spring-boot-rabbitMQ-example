@@ -1,0 +1,18 @@
+spring:   
+  rabbitmq:
+    host: 192.168.100.91
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 3s
+          max-attempts: 10
+          max-interval: 30s
+          multiplier: 2
+          
+logging:
+  level:
+    root: info          
