@@ -1,5 +1,7 @@
 package com.pethoalpar;
 
+import java.util.UUID;
+
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
@@ -45,18 +47,18 @@ public class RabbitExampleApplication {
 	@Autowired
 	private RabbitTemplate template;
 
-	@Scheduled(fixedRate = 3000)
-	protected void schedule() {
-		log.info("Sending message on rabbit");
+	@Scheduled(fixedRate = 5000)
+	protected void schedule() {	
+		log.info("============================================");
 		sendMessageQueue(queue.getName());
 		sendMessageExchange(exchange1.getName());
 	}
 
 	private void sendMessageQueue(String queueName) {
 		RabbitMessage message = new RabbitMessage();
-		message.setMessage("Message on " + queueName);
+		message.setMessage("Message on " + queueName+" "+UUID.randomUUID().toString());
 		message.setTitle("Title");
-
+		log.info("Sending message to "+queueName+":"+message.getMessage());
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			byte[] messageBytes = mapper.writeValueAsBytes(message);
@@ -74,18 +76,18 @@ public class RabbitExampleApplication {
 			log.error("Json parse error on send message queue");
 		}
 	}
-
-	private void sendMessageExchange(String queueName) {
+	
+	private void sendMessageExchange(String exchangeName) {
 		RabbitMessage message = new RabbitMessage();
-		message.setMessage("Message on " + queueName);
+		message.setMessage("Message on " + exchangeName+" "+UUID.randomUUID().toString());
 		message.setTitle("Title");
-
+		log.info("Sending message to "+exchangeName+":"+message.getMessage());
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			byte[] messageBytes = mapper.writeValueAsBytes(message);
 			Message amqpMessage = MessageBuilder.withBody(messageBytes)
 					.setContentType(MessageProperties.CONTENT_TYPE_JSON).build();
-			this.template.convertAndSend(queueName, queueName, amqpMessage, m -> {
+			this.template.convertAndSend(exchangeName, exchangeName, amqpMessage, m -> {
 				m.getMessageProperties().setPriority(3);
 				m.getMessageProperties().setDeliveryMode(MessageDeliveryMode.PERSISTENT);
 				m.getMessageProperties().setContentType(MessageProperties.CONTENT_TYPE_JSON);
